@@ -1,15 +1,7 @@
 <?php
-set_time_limit(300);
-require_once 'whatsprot.class.php';
-require_once 'vCard.php';
-// phone number, deviceIdentity, and name.
-//$options = getopt("d::", array("debug::"));
-//$debug = (array_key_exists("debug", $options) || array_key_exists("d", $options)) ? true : false;
-
-
-$username = "xxxxxxx";                       // Telephone number including the country code without '+' or '00'.
-$identity = "xxxxxx"; // Obtained during registration with this API or using MissVenom (https://github.com/shirioko/MissVenom) to sniff from your phone.
-$password = "xxxxxx";      // A server generated Password you received from WhatsApp. This can NOT be manually created
+$username = "918527853420";                       // Telephone number including the country code without '+' or '00'.
+$identity = "%c8%83%c3%af%0d%ac%d0%bf%ed%e0ji%de%f9cf%88%bfic"; // Obtained during registration with this API or using MissVenom (https://github.com/shirioko/MissVenom) to sniff from your phone.
+$password = "gWnMP5z6NudNcliKv1oQhw1NKiY";      // A server generated Password you received from WhatsApp. This can NOT be manually created
 
 $nickname = "bpt";                           // This is the username (or nickname) displayed by WhatsApp clients.
 $target = 917838828123;                       // Destination telephone number including the country code without '+' or '00'.
@@ -68,25 +60,25 @@ sleep(2);
  //$txt='BJP Maharashtra';
  //$w->sendStatusUpdate($txt);
 //send picture
-//$w->sendMessageImage($groupid, "");
+//$w->sendMessageImage($groupid, "/var/www/html/whatsappgateway/media/image/android.jpg");
 
 //send video
-//$w->sendMessageVideo($groupid, '');
+//$w->sendMessageVideo($groupid, 'http://223.130.4.100/whatsappgateway/media/video/imagica.mp4');
 
 //send Audio
-//$w->sendMessageAudio($groupid, '');
+//$w->sendMessageAudio($groupid, 'http://www.kozco.com/tech/piano2.wav');
 
 //send Location
 //$w->sendLocation($groupid, '4.948568', '52.352957');
 
 // Implemented out queue messages and auto msgidi
-//echo $string .= mb_convert_encoding('', 'UTF-8');
+//echo $string .= mb_convert_encoding('www.brainpulse.com', 'UTF-8');
 //sleep(10);
 
-//echo $w->sendMessage($target, ' we are saving data now '); 
+echo $w->sendMessage($target, ' response testing '); 
 /*
 $v = new vCard();
-$image = file_get_contents('');
+$image = file_get_contents('http://223.130.4.48/whatsappgateway/media/image/test.jpeg');
 
 
 $v->set('data', array(
@@ -126,7 +118,7 @@ echo "don't know";
 $messages = $w->getMessages();
 
 //echo '<pre>'; print_r($messages);
-
+$phone = $username;
 if(!empty($messages)) {
          foreach ($messages as $m) {
                 // Process inbound messages.
@@ -134,25 +126,32 @@ if(!empty($messages)) {
 				
            if ($m->getTag() == "message") {
            echo $from = $m->getAttribute('from');
-           echo $id = $m->getAttribute('id'); 
+           echo $msgid = $m->getAttribute('id'); 
            echo $offline = $m->getAttribute('offline'); 
            echo $time = $m->getAttribute('t'); 
-           echo $notify = $m->getAttribute('notify'); 
+           echo $name = $m->getAttribute('notify'); 
             
 		  foreach($m->getChildren() as $child)
             {
 			
 			if($child->getTag()=='media') {
 			echo $url = $child->getAttribute('url');
-			echo $type = $child->getAttribute('type');
+			echo $mimetype = $child->getAttribute('type');
 			echo $caption = $child->getAttribute('caption');
 			echo $ip = $child->getAttribute('ip');
 			echo $size = $child->getAttribute('size');
-			echo $hash = $child->getAttribute('filehash');
-			
+			echo $filehash = $child->getAttribute('filehash');
+			$type ='media';
+			$file='';
+			$width='';
+			$height='';
+			$thumbnail='';
+		    OnGetImageBP($phone, $from, $msgid, $type, $time, $name, $size, $url, $file, $mimetype, $filehash, $width, $height, $thumbnail);	
 			}
 			if($child->getTag()=='body') {
-			echo $text_message = $child->getData();
+			$type ='text';
+			echo $body = $child->getData();
+			onMessage($phone, $from, $msgid, $type, $time, $name, $body);
 			}				
 			}
 					
@@ -177,29 +176,27 @@ echo "Received on Server";
 }
 $w->eventManager()->bind("onMessageReceivedServer", "onMessageReceivedServer");
 
-function OnGetImageAjay($phone, $from, $msgid, $type, $time, $name, $size, $url, $file, $mimetype, $filehash, $width, $height, $thumbnail) {
-echo 'IMGGGGGGGGGGG'.$url;
-}
-
-
-$w->eventManager()->bind("onGetImage" , "OnGetImageAjay");
-
 function onSendMessage($phone, $targets, $id, $node){
 echo "On send msg event";
- $query = "insert into `sent_messages`(`phone`,`targets`,`mid`,`node`) values ('$phone','$targets','$id','$node')";
-   mysql_query($query);
+$query = "insert into `sent_messages`(`phone`,`targets`,`mid`,`node`) values ('$phone','$targets','$id','$node')";
+mysql_query($query);
 }
 $w->eventManager()->bind("onSendMessage", "onSendMessage");
 
 
- function onMessage($mynumber, $from, $author, $id, $type, $time, $name, $body)
+
+function onMessage($mynumber, $from, $id, $type, $time, $name, $body)
 {
-   echo 'on Get Message Event';
-  echo $query = "insert into `reply_messages`(`from_number`,`my_number`,`msg_id`,`type`,`time`,`name`,`body`) values ('$from','$mynumber','$id','$type','$time','$name','$body')";
-   mysql_query($query);
+echo $query = "insert into `reply_messages`(`from_number`,`my_number`,`msg_id`,`type`,`time`,`name`,`body`) values ('$from','$mynumber','$id','$type','$time','$name','$body')";
+mysql_query($query);
 }
 $w->eventManager()->bind("onGetMessage", "onMessage");
 
+function OnGetImageBP($phone, $from, $msgid, $type, $time, $name, $size, $url, $file, $mimetype, $filehash, $width, $height, $thumbnail) {
+echo $query = "insert into `reply_messages`(`from_number`,`my_number`,`msg_id`,`type`,`mime_type`,`time`,`name`,`body`) values ('$from','$phone','$msgid','$type','$mimetype','$time','$name','$url')";
+mysql_query($query);
+}
+$w->eventManager()->bind("onGetImage" , "OnGetImageBP");
 
 
 
@@ -246,3 +243,4 @@ class ProcessNode
     }
 
 }
+?>
